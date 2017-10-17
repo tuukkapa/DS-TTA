@@ -165,4 +165,4 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']
 model.fit(train_vecs_w2v, y_train, batch_size = 256, epochs = 20)
 
 score = model.evaluate(test_vecs_w2v, y_test, batch_size=128, verbose=2)
-print(score) % currently about 80% val acc
+print(score) # currently about 80% val acc

@@ -9,7 +9,7 @@ def authenticate():
     api = tweepy.API(auth)
     return api
 
-# Gets 100 tweets with a hashtag #bitcoin. Removes linebreaks from tweets.
+# Gets 100 tweets with a hashtag. Removes linebreaks from tweets.
 def getTweetsAsList(hashtag):
     api = authenticate()
     max_tweets = 100

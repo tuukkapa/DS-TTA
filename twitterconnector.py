@@ -14,8 +14,8 @@ def getTweetsAsList(hashtag):
     api = authenticate()
     max_tweets = 100
     tweet_texts = []
-    for tweet in tweepy.Cursor(api.search, q=hashtag, rpp=100).items(max_tweets):
-        tweet_text = tweet.text.replace('\r', '').replace('\n', '')
+    for tweet in tweepy.Cursor(api.search, q=hashtag, lang="en", rpp=100).items(max_tweets):
+        tweet_text = tweet.text.replace('\r', '').replace('\n', ' ')
         tweet_texts.append(tweet_text.encode('utf-8'))
     #output to console for debugging
     #for text in tweet_texts:

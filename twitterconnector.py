@@ -15,11 +15,11 @@ def getTweetsAsList(hashtag):
     max_tweets = 100
     tweet_texts = []
     for tweet in tweepy.Cursor(api.search, q=hashtag, lang="en", rpp=100).items(max_tweets):
-        tweet_text = tweet.text.replace('\r', '').replace('\n', ' ')
+        tweet_text = tweet.text.replace('\r', '').replace('\n', ' ').encode('utf-8', errors = 'ignore')
         tweet_texts.append(tweet_text)
     #output to console for debugging
     for text in tweet_texts:
-        print(text)
+        print(text.decode())
     return tweet_texts
 
 # Gets 100 tweets with a hashtag and saves them to a csv file, one tweet per row.

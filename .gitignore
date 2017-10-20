@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 credentials.py
+Sentiment-Analysis-Dataset.zip
+Sentiment Analysis Dataset.csv

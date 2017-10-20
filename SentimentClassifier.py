@@ -31,11 +31,11 @@ def read_data(file):
 ## Would be good to replace @someusers with AT_USER string etc 
 
 def convert_data_to_index(string_data, wv):
-    index_data = []
+    indexed_sequence = []
     for word in string_data:
         if str(word) in wv:
-            index_data.append(wv.vocab[word].index)
-    return index_data
+            indexed_sequence.append(wv.vocab[word].index)
+    return indexed_sequence
 
 def tagTweets(tweets, tag_type):
     tagged = []
@@ -58,74 +58,63 @@ def buildWordVector(tokens, size):
         vec /= count
     return vec
 
+def convert_to_index(tokens):
+    sequence = []
+    for t in tokens:
+        if t in w2v_model.wv.vocab:
+            sequence.append(w2v_model.wv.vocab[t].index)
+    return sequence
+
 data = read_data("Sentiment Analysis Dataset.csv")
 data = process_tweets(data, training=True)
 
 
-w2v_model = gensim.models.Word2Vec(size=200, min_count=10)
-w2v_model.build_vocab([x.words for x in tqdm(data['tokens'])])
-w2v_model.train([x.words for x in tqdm(data['tokens'])], total_examples=len(data), epochs=w2v_model.iter)
+#w2v_model = gensim.models.Word2Vec(size=200, min_count=10)
+#w2v_model.build_vocab([x.words for x in tqdm(data['tokens'])])
+#w2v_model.train([x.words for x in tqdm(data['tokens'])], total_examples=len(data), epochs=w2v_model.iter)
 
-w2v_model.save("" + "w2v_model")
+#This works
+#w2v_model = gensim.models.Word2Vec(data['tokens'], size=300, window=6, min_count=5, workers=16)
+#w2v_model.save("" + "w2v_model")
 w2v_model = gensim.models.Word2Vec.load("" + "w2v_model")
-
-index_data = convert_data_to_index(data['tokens'], w2v_model.wv)
-#print(sentences[:4], index_data[:4])
-
+w2v_model.wv.most_similar_cosmul(positive=['facebook'])
+#sequences = [convert_to_index(s) for s in data['tokens']]
+from keras.preprocessing.sequence import pad_sequences
+sequences = pad_sequences(sequences, maxlen=16)
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(np.array(data.head().tokens),
-                                                    np.array(data.head().Sentiment),
+X_train, X_test, y_train, y_test = train_test_split(np.array(sequences),
+                                                    np.array(data.Sentiment),
                                                     test_size=0.2)
 
-X_train = tagTweets(X_train, 'TRAIN')
-X_test = tagTweets(X_test, 'TEST')
 
-#### WIP plz ignore ( or help )
-
-#IMPORTANT needed for CNN somehow (for embedding layer)
 ## Convert wv word vectors to np matrix
 ## So we can insert it into Keras model somehow
-embedding_matrix = np.zeros((len(w2v_model.wv.vocab), 200))
+embedding_matrix = np.zeros((len(w2v_model.wv.vocab), 300))
 for i in range(len(w2v_model.wv.vocab)):
     embedding_vector = w2v_model.wv[w2v_model.wv.index2word[i]]
     if embedding_vector is not None:
         embedding_matrix[i] = embedding_vector
 
 
+##Not used currently, could boost performance
+#from sklearn.feature_extraction.text import TfidfVectorizer
+#vectorizer = TfidfVectorizer(analyzer=lambda x: x, min_df=10)
+#matrix = vectorizer.fit_transform([x.words for x in X_train])
+#tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
+#len(tfidf)
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-vectorizer = TfidfVectorizer(analyzer=lambda x: x, min_df=10)
-matrix = vectorizer.fit_transform([x.words for x in X_train])
-tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
-len(tfidf)
+## This was for the old ANN model, dont delete yet
+#from sklearn.preprocessing import scale
+#train_vecs_w2v = np.concatenate([buildWordVector(z, 200) for z in tqdm(map(lambda x: x.words, X_train))])
+#train_vecs_w2v = scale(train_vecs_w2v)
 
-X_train[0]
-
-
-from sklearn.preprocessing import scale
-train_vecs_w2v = np.concatenate([buildWordVector(z, 200) for z in tqdm(map(lambda x: x.words, X_train))])
-train_vecs_w2v = scale(train_vecs_w2v)
-
-test_vecs_w2v = np.concatenate([buildWordVector(z, 200) for z in tqdm(map(lambda x: x.words, X_test))])
-test_vecs_w2v = scale(test_vecs_w2v)
-
-#w2v_model = gensim.models.Word2Vec(sentences, size=200, window=5, min_count=5, workers=16)
-#w2v_model.wv.most_similar_cosmul(positive=['king'])
-
-#w2v_model.save('/' + 'w2vmodel_1')
-#model = gensim.models.Word2Vec.load('/' + "w2vmodel_1")
+#test_vecs_w2v = np.concatenate([buildWordVector(z, 200) for z in tqdm(map(lambda x: x.words, X_test))])
+#test_vecs_w2v = scale(test_vecs_w2v)
 
 
-        
-        
-
-#from keras.preprocessing.sequence import pad_sequences
-#sentences = pad_sequences(index_data, maxlen=max_tweet_length)
-
-#padded = pad_sequences(sentences, maxlen=140)
 
 
-from keras.layers import Conv1D, Flatten, Dropout, Dense
+from keras.layers import Conv1D, Flatten, Dropout, Dense, BatchNormalization, LeakyReLU, MaxPooling1D
 from keras.layers.embeddings import Embedding
 from keras.models import Sequential
 #len(w2v_model.wv.vocab)
@@ -133,27 +122,47 @@ from keras.models import Sequential
 #                            200,
 #                            weights=embedding_matrix)
 
-
+embedding_matrix.shape
 ### END WIP ##
 len(w2v_model.wv.vocab)
 model = Sequential()
 model.add(Embedding(input_dim=embedding_matrix.shape[0], output_dim=embedding_matrix.shape[1],
-                    weights=[embedding_matrix]))
-#model.add(Conv1D(64, 3, input_dim=200, border_mode='same'))
-#model.add(Conv1D(32, 3, border_mode='same'))
-#model.add(Conv1D(16, 3, border_mode='same'))
-#model.add(Flatten())
-model.add(Dense(256,activation='relu', input_dim=200))
-model.add(Dropout(0.4))
-model.add(Dense(256,activation='relu'))
-model.add(Dropout(0.4))
-model.add(Dense(128,activation='relu'))
+                    weights=[embedding_matrix],
+                    input_length=16))
+model.add(Conv1D(128, 3, activation='elu', border_mode='same'))
+model.add(BatchNormalization())
 model.add(Dropout(0.3))
+model.add(Conv1D(128, 3, activation='elu', border_mode='same'))
+model.add(BatchNormalization())
+model.add(Dropout(0.3))
+model.add(Conv1D(128, 3, activation='elu', border_mode='same'))
+model.add(BatchNormalization())
+model.add(Dropout(0.3))
+model.add(Conv1D(128, 3, activation='elu', border_mode='same'))
+model.add(BatchNormalization())
+model.add(Dropout(0.3))
+model.add(Conv1D(128, 3, activation='elu', border_mode='same'))
+model.add(BatchNormalization())
+model.add(Dropout(0.3))
+model.add(MaxPooling1D())
+model.add(Conv1D(256, 3, activation='elu', border_mode='same'))
+model.add(BatchNormalization())
+model.add(Dropout(0.4))
+model.add(Flatten())
+model.add(Dense(256,activation='elu'))
+model.add(Dropout(0.4))
+model.add(Dense(256,activation='elu'))
+model.add(Dropout(0.4))
+model.add(Dense(256,activation='elu'))
+model.add(Dropout(0.4))
 model.add(Dense(1,activation='sigmoid'))
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.layers[0].trainable = False
 
-model.fit(train_vecs_w2v, y_train, batch_size = 256, epochs = 20)
+model.fit(X_train, y_train, batch_size=2048, epochs = 30,
+          validation_split=0.2, callbacks=[])
 
-score = model.evaluate(test_vecs_w2v, y_test, batch_size=128, verbose=2)
+score = model.evaluate(X_test, y_test, batch_size=128, verbose=2)
+score
 print(score) # currently about 80% val acc
 

@@ -17,8 +17,9 @@ tokens = ['Hello', 'there', '@lol', 'lol@lol.com', 'you', 'suck']
 tweet = "Hey loser you suck"
 
 tokens = tokenizer.tokenize(tweet)
-
 def tokenize(tweet):
+    """ Tokenize a tweet(string) e.g "Matt SUCKS!" => ['Matt', 'SUCKS!']
+        Also replaces emails, urls and @usernames with their own tokens """
     try:
         tweet = tweet.lower()
         tokens = tokenizer.tokenize(tweet)
@@ -30,14 +31,14 @@ def tokenize(tweet):
         return 'NC'
 
 
-## Tokenize the first N tweets on a dataframe 
-## Specify training=true if processing training set only
 def process_tweets(data, n=1600000, training = False):
+    """ Tokenize the first N tweets on a dataframe 
+        Specify training=true if processing training set only """
     data = data.head(n)
     if training:
         data['tokens'] = data['SentimentText'].map(tokenize) 
     else:
-        data = data.map(tokenize)
+        data['tokens'] = data['col'].map(tokenize)
     data = data[data.tokens != 'NC']
     data.reset_index(inplace=True)
     data.drop('index', inplace=True, axis=1)

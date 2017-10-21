@@ -84,6 +84,20 @@ def create_embedding_matrix(w2v_model):
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
 
+def classify_tweets(tokenized_tweets):
+    sequences = [convert_to_index(s) for s in tokenized_tweets['tokens']]
+    from keras.preprocessing.sequence import pad_sequences
+    sequences = pad_sequences(sequences, maxlen=16)
+    predictions = model.predict(sequences, batch_size=32, verbose=1)
+    preds = {"pos":0, "neg":0}
+    for p in predictions:
+        if p>0.5:
+            preds["pos"] = preds["pos"] + 1
+        else:
+            preds["neg"] = preds["neg"] + 1
+    return preds
+
+
 data = read_data("Sentiment Analysis Dataset.csv")
 data = process_tweets(data, training=True)
 
@@ -114,7 +128,7 @@ model.fit(X_train, y_train, batch_size=8000, epochs = 10,
 score = model.evaluate(X_test, y_test, batch_size=512, verbose=1)
 print(score) # currently about 83% val acc
 #model.save('tweet_w2v_cnn_83')
-model = load_model('tweet_w2v_cnn_83')
+model = load_model('tweet_w2v_cnn_85.h5')
 
 nadam = Nadam()
 classifier = KerasClassifier(build_fn = build_classifier)

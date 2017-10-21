@@ -7,6 +7,7 @@ see: http://amueller.github.io/word_cloud/generated/wordcloud.WordCloud.html#wor
 """
 import sys
 from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 
 def word_cloud_from_file(inpath, outpath, **kwargs):
@@ -26,6 +27,16 @@ def word_cloud_from_frequencies(freq, outpath, **kwargs):
     """Creates word cloud from word frequencies in dictionary."""
     wc = WordCloud(**kwargs).generate_from_frequencies(freq)
     wc.to_file(outpath)
+
+
+def bar_plot_from_dataframe(df, outpath):
+    """Creates bar plot for positivity
+
+    Data frame expected to have index for tag names and 2 columns:
+    One for positive and negative counts or percentages
+    """
+    df.div(df.sum(axis=1), axis=0).plot.bar(stacked=True)
+    plt.savefig(outpath)
 
 
 if __name__ == '__main__':

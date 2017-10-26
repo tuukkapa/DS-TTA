@@ -51,12 +51,12 @@ def main():
     inputgroup.add_argument('-f', '--files', nargs='+')
     inputgroup.add_argument('-q', '--queries', nargs='+')
     pparser.add_argument('-wc', '--wordcloud', action='store_true')
-    pparser.add_argument('-n', type=int, default=100, dest='count')
+    pparser.add_argument('-n', type=int, default=300, dest='count')
 
     gparser = subparsers.add_parser('get',
                                     description='Gets tweets and writes them into files')
     gparser.add_argument('queries', nargs='+')
-    gparser.add_argument('-n', type=int, default=100, dest='count')
+    gparser.add_argument('-n', type=int, default=300, dest='count')
 
     args = parser.parse_args()
     if args.operation == 'get':
@@ -70,6 +70,16 @@ def main():
                        tc.read_tweets_from_file(f)) for f in args.files]
         analyze_tweets(tweets, model, w2v_model)
 
+    while True:
+        cmd = input("Enter command:")
+        if cmd == "exit":
+            break
+        elif cmd == "test":
+            test_msg = input("Enter message to eval")
+            test_msg = [test_msg]
+            df = pd.DataFrame({'tokens': list(map(tp.tokenize, test_msg))})
+            result, predictions = classify_tweets(df, model, w2v_model)
+            print(predictions)
 
 if __name__ == "__main__":
     main()

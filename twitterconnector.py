@@ -19,7 +19,7 @@ def authenticate():
     return api
 
 
-def getTweetsAsList(hashtag, max_tweets=100):
+def getTweetsAsList(hashtag, max_tweets=300):
     """Gets 100 tweets with a hashtag. Removes linebreaks from tweets.
     The rows at list needs to be decoded with decode()
     """
@@ -46,14 +46,14 @@ def getTweetsAsCSV(filename, hashtag):
             writer.writerow([item])
 
 
-def query_tweets(query, nresults=100):
+def query_tweets(query, nresults=300):
     """Queries twitter for tweets and returns list of raw text contents"""
     api = authenticate()
     return [tweet.text.replace('\r', '').replace('\n', ' ')
             for tweet in tweepy.Cursor(api.search, q=query, lang="en").items(nresults)]
 
 
-def query_tweets_to_file(outfile, query, nresults=100):
+def query_tweets_to_file(outfile, query, nresults=300):
     """Queries twitter for tweets and saves raw text contents to file
 
     outfile accepts either a path or an opened file

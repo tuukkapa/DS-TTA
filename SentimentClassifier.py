@@ -97,7 +97,7 @@ def classify_tweets(tokenized_tweets, model, w2v):
             preds["neu"] = preds["neu"] + 1
         else:
             preds["neg"] = preds["neg"] + 1
-    return preds
+    return preds, predictions
 
 def load_models():
     cnn = load_model('tweet_w2v_cnn_85.h5')

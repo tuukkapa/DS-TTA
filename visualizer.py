@@ -36,6 +36,7 @@ def bar_plot_from_dataframe(df, outpath):
     One for positive and negative counts or percentages
     """
     df.div(df.sum(axis=1), axis=0).plot.bar(stacked=True)
+    #plt.show()
     plt.savefig(outpath)
 
 

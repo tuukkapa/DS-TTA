@@ -45,11 +45,11 @@ def convert_data_to_index(string_data, wv):
             indexed_sequence.append(wv.vocab[word].index)
     return indexed_sequence
 
-def convert_to_index(tokens):
+def convert_to_index(tokens, w2v):
     sequence = []
     for t in tokens:
-        if t in w2v_model.wv.vocab:
-            sequence.append(w2v_model.wv.vocab[t].index)
+        if t in w2v.wv.vocab:
+            sequence.append(w2v.wv.vocab[t].index)
     return sequence
 
 def build_classifier(optimizer='rmsprop', activation='relu'):
@@ -84,65 +84,73 @@ def create_embedding_matrix(w2v_model):
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
 
-def classify_tweets(tokenized_tweets):
-    sequences = [convert_to_index(s) for s in tokenized_tweets['tokens']]
+def classify_tweets(tokenized_tweets, model, w2v):
+    sequences = [convert_to_index(s, w2v) for s in tokenized_tweets['tokens']]
     from keras.preprocessing.sequence import pad_sequences
     sequences = pad_sequences(sequences, maxlen=16)
     predictions = model.predict(sequences, batch_size=32, verbose=1)
-    preds = {"pos":0, "neg":0}
+    preds = {"pos":0, "neu": 0, "neg":0}
     for p in predictions:
-        if p>0.5:
+        if p>0.65:
             preds["pos"] = preds["pos"] + 1
+        elif p <0.35:
+            preds["neu"] = preds["neu"] + 1
         else:
             preds["neg"] = preds["neg"] + 1
     return preds
 
+def load_models():
+    cnn = load_model('tweet_w2v_cnn_85.h5')
+    w2v_model = gensim.models.Word2Vec.load("" + "w2v_model")
+    return cnn, w2v_model
 
-data = read_data("Sentiment Analysis Dataset.csv")
-data = process_tweets(data, training=True)
-
-
-#Train, save or load w2v model
-#w2v_model = gensim.models.Word2Vec(data['tokens'], size=300, window=6, min_count=5, workers=16)
-#w2v_model.save("" + "w2v_model")
-w2v_model = gensim.models.Word2Vec.load("" + "w2v_model")
-#w2v_model.wv.most_similar_cosmul(positive=['facebook'])
-
-#
-sequences = [convert_to_index(s) for s in data['tokens']]
-from keras.preprocessing.sequence import pad_sequences
-sequences = pad_sequences(sequences, maxlen=16)
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(np.array(sequences),
-                                                    np.array(data.Sentiment),
-                                                    test_size=0.2)
-
-embedding_matrix = create_embedding_matrix(w2v_model)
-
-
-model = build_classifier(optimizer='rmsprop', activation='relu')
-
-model.fit(X_train, y_train, batch_size=8000, epochs = 10,
-          validation_split=0.1, verbose=2)
-
-score = model.evaluate(X_test, y_test, batch_size=512, verbose=1)
-print(score) # currently about 83% val acc
-#model.save('tweet_w2v_cnn_83')
-model = load_model('tweet_w2v_cnn_85.h5')
-
-nadam = Nadam()
-classifier = KerasClassifier(build_fn = build_classifier)
-parameters = {'optimizer': ['adam', 'rmsprop'],
-              'activation': ['relu', 'elu', 'sigmoid', 'tanh', 'selu'],
-              'epochs': [5],
-              'batch_size': [4096]}
-grid_search = GridSearchCV(estimator = classifier,
-                           param_grid = parameters,
-                           scoring = 'accuracy',
-                           cv = 3)
-grid_search = grid_search.fit(X_train, y_train)
-best_parameters = grid_search.best_params_
-best_accuracy = grid_search.best_score_
+#Todo split this, currently only in method so it wont run on import
+def training_code():
+    data = read_data("Sentiment Analysis Dataset.csv")
+    data = process_tweets(data, training=True)
+    
+    
+    #Train, save or load w2v model
+    #w2v_model = gensim.models.Word2Vec(data['tokens'], size=300, window=6, min_count=5, workers=16)
+    #w2v_model.save("" + "w2v_model")
+    w2v_model = gensim.models.Word2Vec.load("" + "w2v_model")
+    #w2v_model.wv.most_similar_cosmul(positive=['facebook'])
+    
+    #
+    sequences = [convert_to_index(s) for s in data['tokens']]
+    from keras.preprocessing.sequence import pad_sequences
+    sequences = pad_sequences(sequences, maxlen=16)
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(np.array(sequences),
+                                                        np.array(data.Sentiment),
+                                                        test_size=0.2)
+    
+    embedding_matrix = create_embedding_matrix(w2v_model)
+    
+    
+    model = build_classifier(optimizer='rmsprop', activation='relu')
+    
+    model.fit(X_train, y_train, batch_size=8000, epochs = 10,
+              validation_split=0.1, verbose=2)
+    
+    score = model.evaluate(X_test, y_test, batch_size=512, verbose=1)
+    print(score) # currently about 83% val acc
+    #model.save('tweet_w2v_cnn_83')
+    model = load_model('tweet_w2v_cnn_85.h5')
+    
+    nadam = Nadam()
+    classifier = KerasClassifier(build_fn = build_classifier)
+    parameters = {'optimizer': ['adam', 'rmsprop'],
+                  'activation': ['relu', 'elu', 'sigmoid', 'tanh', 'selu'],
+                  'epochs': [5],
+                  'batch_size': [4096]}
+    grid_search = GridSearchCV(estimator = classifier,
+                               param_grid = parameters,
+                               scoring = 'accuracy',
+                               cv = 3)
+    grid_search = grid_search.fit(X_train, y_train)
+    best_parameters = grid_search.best_params_
+    best_accuracy = grid_search.best_score_
 
 ##Not used currently, could boost performance
 #from sklearn.feature_extraction.text import TfidfVectorizer

@@ -8,11 +8,12 @@ Created on Fri Oct 20 11:42:22 2017
 from collections import Counter
 import re
 import string
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 import numpy as np
 import pandas as pd
-
+nltk.download("stopwords")
 twitter_username_re = re.compile(r'@([A-Za-z0-9_]+)')
 url_re = re.compile(
     r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})')

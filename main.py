@@ -3,28 +3,45 @@
 import argparse
 import os
 import sys
-import tweet_processor
-import twitterconnector
-import visualizer
+import tweet_processor as tp
+import twitterconnector as tc
+import visualizer as vis
+import pandas as pd
+from SentimentClassifier import load_models, classify_tweets
 
 
 def query_tweets_to_files(queries, count):
     for query in queries:
-        twitterconnector.query_tweets_to_file(
+        tc.query_tweets_to_file(
             f'tweets/{query}.txt', query, count)
 
 
-def analyze_tweets(tweets):
+def analyze_tweets(tweets, model, w2v_model):
     """Analyze tweets
 
     Tweets is expected to be list of tuples (topic, tweets)
     """
     # TODO DO EVERYTHING HERE
-    print(tweets)
+    #tweets = [("StarWars", tc.query_tweets("StarWars"))]
+    
+    #tweets = tc.query_tweets('starwars')
+    df = pd.DataFrame(columns=['pos', 'neu', 'neg'])
+    for (topic, topic_tweets) in tweets:
+        tokenized_tweets =  tp.process_raw_tweets(topic_tweets)
+        df.loc[topic] = classify_tweets(
+                tokenized_tweets,
+                model,
+                w2v_model)
+        vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"{topic}_cloud.png")
+    
+    vis.bar_plot_from_dataframe(df, 'results.png')
+    
+    print(df)
 
 
 def main():
     """Allows doing things from command line"""
+    model, w2v_model = load_models()
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='operation')
 
@@ -47,11 +64,11 @@ def main():
     elif args.operation == 'process':
         if args.queries:
             tweets = [(query,
-                       twitterconnector.query_tweets(query, args.count)) for query in args.queries]
+                       tc.query_tweets(query, args.count)) for query in args.queries]
         else:
             tweets = [(os.path.splitext(os.path.basename(f))[0],
-                       twitterconnector.read_tweets_from_file(f)) for f in args.files]
-        analyze_tweets(tweets)
+                       tc.read_tweets_from_file(f)) for f in args.files]
+        analyze_tweets(tweets, model, w2v_model)
 
 
 if __name__ == "__main__":

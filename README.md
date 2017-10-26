@@ -3,7 +3,11 @@ Twitter Trend Analysis for Introduction to Data Science course at University of 
 
 ## Usage
 
-Run at terminal: TODO.
+Download python scripts from this repository to your computer.
+
+Run at terminal: `python3 main.py process -q hashtag`
+
+Hashtag is the hashtag from which you want to search tweets. Write the hashtag without hash sign (#).
 
 ## Report
 

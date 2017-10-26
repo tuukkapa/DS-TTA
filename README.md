@@ -1,6 +1,12 @@
 # DS-TTA
 Twitter Trend Analysis for Introduction to Data Science course at University of Helsinki
 
+Made by:
+
+* Max Koppatz
+* Tuukka Paukkunen
+* Markus Tuominen
+
 ## Usage
 
 Download python scripts from this repository to your computer.

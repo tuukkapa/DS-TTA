@@ -56,7 +56,8 @@ def main():
                                     description='Gets tweets and writes them into files')
     gparser.add_argument('queries', nargs='+')
     gparser.add_argument('-n', type=int, default=300, dest='count')
-
+    iparser = subparsers.add_parser('interactive',
+                                    description='Manually input messages for evaluation')
     args = parser.parse_args()
     
     model, w2v_model = load_models()
@@ -70,17 +71,20 @@ def main():
             tweets = [(os.path.splitext(os.path.basename(f))[0],
                        tc.read_tweets_from_file(f)) for f in args.files]
         analyze_tweets(tweets, model, w2v_model)
+    elif args.operation == 'interactive':
+        interactive(model, w2v_model)
 
+
+            
+def interactive(model, w2v_model):
     while True:
-        cmd = input("Enter command:\n")
-        if cmd == "exit":
+        test_msg = input("Enter message to evaluate between 0(neg) and 1(pos) or exit to quit\n")
+        if test_msg == 'exit':
             break
-        elif cmd == "test":
-            test_msg = input("Enter message to eval\n")
-            test_msg = [test_msg]
-            df = pd.DataFrame({'tokens': list(map(tp.tokenize, test_msg))})
-            result, predictions = classify_tweets(df, model, w2v_model)
-            print(predictions)
+        test_msg = [test_msg]
+        df = pd.DataFrame({'tokens': list(map(tp.tokenize, test_msg))})
+        result, predictions = classify_tweets(df, model, w2v_model)
+        print(predictions)
 
 if __name__ == "__main__":
     main()

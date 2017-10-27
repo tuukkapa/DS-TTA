@@ -23,8 +23,8 @@ from keras.models import load_model
 max_tweet_length = 140
 
 
-## Function to read a file of tweets and keep only sentiment and sentimenttext 
 def read_data(file):
+    """ Read a csv dataset of labeled tweets """
     data = pd.read_csv(file, error_bad_lines=False)
     data.drop(['ItemID', 'SentimentSource'], axis=1, inplace=True)
     data = data[data.Sentiment.isnull() == False]
@@ -35,10 +35,9 @@ def read_data(file):
     #print('dataset loaded with shape' + data.shape)    
     return data
 
-## Tokenize a tweet(string) e.g "Matt SUCKS!" => ['Matt', 'SUCKS!']
-## Would be good to replace @someusers with AT_USER string etc 
-
 def convert_data_to_index(string_data, wv):
+    """ Convert a tokenized sequence to a sequence 
+    word indexes """
     indexed_sequence = []
     for word in string_data:
         if str(word) in wv:
@@ -53,6 +52,9 @@ def convert_to_index(tokens, w2v):
     return sequence
 
 def build_classifier(optimizer='rmsprop', activation='relu'):
+    """ Build the CNN classifier
+        This is the current architecture that so far 
+        had the best results """
     model = Sequential()
     model.add(Embedding(input_dim=embedding_matrix.shape[0], output_dim=embedding_matrix.shape[1],
                         weights=[embedding_matrix],
@@ -78,6 +80,9 @@ def build_classifier(optimizer='rmsprop', activation='relu'):
 ## Convert wv word vectors to np matrix
 ## So we can insert it into Keras embeddings layer as input
 def create_embedding_matrix(w2v_model):
+    """ Convert w2v word vectors to a np matrix
+        so we can insert it into a Keras embeddings layer
+        as input """
     embedding_matrix = np.zeros((len(w2v_model.wv.vocab), 300))
     for i in range(len(w2v_model.wv.vocab)):
         embedding_vector = w2v_model.wv[w2v_model.wv.index2word[i]]
@@ -104,7 +109,8 @@ def load_models():
     w2v_model = gensim.models.Word2Vec.load("" + "w2v_model")
     return cnn, w2v_model
 
-#Todo split this, currently only in method so it wont run on import
+# Todo split this, currently only in method so it wont run on import
+# Do not use or delete
 def training_code():
     data = read_data("Sentiment Analysis Dataset.csv")
     data = process_tweets(data, training=True)
@@ -159,7 +165,7 @@ def training_code():
 #tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
 #len(tfidf)
 
-## This was for the old ANN model, dont delete yet
+## This was for the old ANN model, dont delete yet, for reference
 #from sklearn.preprocessing import scale
 #train_vecs_w2v = np.concatenate([buildWordVector(z, 200) for z in tqdm(map(lambda x: x.words, X_train))])
 #train_vecs_w2v = scale(train_vecs_w2v)

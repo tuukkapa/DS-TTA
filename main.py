@@ -12,8 +12,7 @@ from SentimentClassifier import load_models, classify_tweets
 
 def query_tweets_to_files(queries, count):
     for query in queries:
-        tc.query_tweets_to_file(
-            f'tweets/{query}.txt', query, count)
+        tc.query_tweets_to_file(f'tweets/{query}.txt', query, count)
 
 
 def analyze_tweets(tweets, model, w2v_model):

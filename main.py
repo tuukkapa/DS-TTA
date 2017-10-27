@@ -26,13 +26,10 @@ def analyze_tweets(tweets, model, w2v_model):
     
     #tweets = tc.query_tweets('starwars')
     df = pd.DataFrame(columns=['pos', 'neu', 'neg'])
-    for (topic, topic_tweets) in tweets:
+    for topic, topic_tweets in tweets:
         tokenized_tweets =  tp.process_raw_tweets(topic_tweets)
-        df.loc[topic] = classify_tweets(
-                tokenized_tweets,
-                model,
-                w2v_model)
-        vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"{topic}_cloud.png")
+        df.loc[topic], lol = classify_tweets(tokenized_tweets, model, w2v_model)
+        vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"{topic}_cloud.png", width=800, height=400,)
     
     vis.bar_plot_from_dataframe(df, 'results.png')
     
@@ -41,7 +38,6 @@ def analyze_tweets(tweets, model, w2v_model):
 
 def main():
     """Allows doing things from command line"""
-    model, w2v_model = load_models()
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='operation')
 
@@ -59,6 +55,8 @@ def main():
     gparser.add_argument('-n', type=int, default=300, dest='count')
 
     args = parser.parse_args()
+    
+    model, w2v_model = load_models()
     if args.operation == 'get':
         query_tweets_to_files(args.queries, args.count)
     elif args.operation == 'process':
@@ -71,11 +69,11 @@ def main():
         analyze_tweets(tweets, model, w2v_model)
 
     while True:
-        cmd = input("Enter command:")
+        cmd = input("Enter command:\n")
         if cmd == "exit":
             break
         elif cmd == "test":
-            test_msg = input("Enter message to eval")
+            test_msg = input("Enter message to eval\n")
             test_msg = [test_msg]
             df = pd.DataFrame({'tokens': list(map(tp.tokenize, test_msg))})
             result, predictions = classify_tweets(df, model, w2v_model)

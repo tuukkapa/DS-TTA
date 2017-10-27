@@ -11,6 +11,8 @@ from SentimentClassifier import load_models, classify_tweets
 
 
 def query_tweets_to_files(queries, count):
+    if not os.path.isdir('tweets'):
+        os.mkdir('tweets')
     for query in queries:
         tc.query_tweets_to_file(
             f'tweets/{query}.txt', query, count)

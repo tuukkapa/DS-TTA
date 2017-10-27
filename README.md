@@ -7,17 +7,7 @@ Made by:
 * Tuukka Paukkunen
 * Markus Tuominen
 
-## Usage
-
-Download python scripts from this repository to your computer.
-
-Run at terminal: `python3 main.py process -q hashtag`
-
-Hashtag is the hashtag from which you want to search tweets. Write the hashtag without hash sign (#).
-
-## Report
-
-Please see the [Wiki page](https://github.com/tuukkapa/DS-TTA/wiki).
+Please see the [Wiki page](https://github.com/tuukkapa/DS-TTA/wiki) for the report including usage instructions.
 
 ## Dataset
 

@@ -28,12 +28,14 @@ def analyze_tweets(tweets, model, w2v_model):
     
     #tweets = tc.query_tweets('starwars')
     df = pd.DataFrame(columns=['pos', 'neu', 'neg'])
+    if not os.path.isdir('results'):
+        os.mkdir('results')
     for topic, topic_tweets in tweets:
         tokenized_tweets =  tp.process_raw_tweets(topic_tweets)
         df.loc[topic], dummy = classify_tweets(tokenized_tweets, model, w2v_model)
-        vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"{topic}_cloud.png", width=800, height=400,)
+        vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"results/{topic}_cloud.png", width=800, height=400,)
     
-    vis.bar_plot_from_dataframe(df, 'results.png')
+    vis.bar_plot_from_dataframe(df, 'results/results.png')
     
     print(df)
 

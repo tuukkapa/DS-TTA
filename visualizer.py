@@ -35,7 +35,7 @@ def bar_plot_from_dataframe(df, outpath):
     Data frame expected to have index for tag names and 2 columns:
     One for positive and negative counts or percentages
     """
-    df.div(df.sum(axis=1), axis=0).plot.bar(stacked=True, color=['tab:blue', 'tab:gray', 'tab:red'])
+    df.div(df.sum(axis=1), axis=0).plot.barh(stacked=True, color=['tab:blue', 'tab:gray', 'tab:red'])
     #plt.show()
     plt.savefig(outpath)
 

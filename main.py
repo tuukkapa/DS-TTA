@@ -35,7 +35,7 @@ def analyze_tweets(tweets, model, w2v_model):
         vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"results/{topic}_cloud.png", width=800, height=400,)
     
     vis.bar_plot_from_dataframe(df, 'results/results.png')
-    
+    print("\n")
     print(df)
 
 
@@ -60,10 +60,12 @@ def main():
                                     description='Manually input messages for evaluation')
     args = parser.parse_args()
     
-    model, w2v_model = load_models()
+    
     if args.operation == 'get':
         query_tweets_to_files(args.queries, args.count)
+        print("Tweets successfully saved to disk")
     elif args.operation == 'process':
+        model, w2v_model = load_models()
         if args.queries:
             tweets = [(query,
                        tc.query_tweets(query, args.count)) for query in args.queries]
@@ -71,7 +73,9 @@ def main():
             tweets = [(os.path.splitext(os.path.basename(f))[0],
                        tc.read_tweets_from_file(f)) for f in args.files]
         analyze_tweets(tweets, model, w2v_model)
+        print("Images successfully saved to disk.")
     elif args.operation == 'interactive':
+        model, w2v_model = load_models()
         interactive(model, w2v_model)
 
 

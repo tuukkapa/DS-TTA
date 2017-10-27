@@ -28,7 +28,7 @@ def analyze_tweets(tweets, model, w2v_model):
     df = pd.DataFrame(columns=['pos', 'neu', 'neg'])
     for topic, topic_tweets in tweets:
         tokenized_tweets =  tp.process_raw_tweets(topic_tweets)
-        df.loc[topic], lol = classify_tweets(tokenized_tweets, model, w2v_model)
+        df.loc[topic], dummy = classify_tweets(tokenized_tweets, model, w2v_model)
         vis.word_cloud_from_frequencies(tp.count_tokens(tokenized_tweets), f"{topic}_cloud.png", width=800, height=400,)
     
     vis.bar_plot_from_dataframe(df, 'results.png')
